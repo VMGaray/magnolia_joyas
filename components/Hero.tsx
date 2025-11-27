@@ -9,7 +9,7 @@ export default function Hero() {
       {/* CONTENEDOR DE LA IMAGEN */}
       {/* Usamos 'aspect' para darle una proporción apaisada linda (21:9 o 16:9) */}
       {/* max-h-[80vh] limita la altura al 80% de la pantalla para que no sea excesiva */}
-      <div className="relative w-full aspect-[16/9] md:aspect-[3/1] max-h-[55vh] overflow-hidden">
+      <div className="relative w-full aspect-video md:aspect-3/1 max-h-[55vh] overflow-hidden">
          <Image 
            src="/banner-home2.jpg"
            alt="Magnolia Joyas Collection"

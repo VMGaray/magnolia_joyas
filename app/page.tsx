@@ -1,12 +1,15 @@
 import Hero from "@/components/Hero";
+import CategoryGrid from "@/components/CategoryGrid";
+import QuoteBanner from "@/components/QuoteBanner";
+import FeaturedProducts from "@/components/FeaturedProducts"; // <--- Importar
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-magnolia-light">
-      {/* Sección Principal */}
       <Hero />
-
-      {/* Acá abajo irán las categorías después... */}
+      <CategoryGrid />
+      <QuoteBanner />
+      <FeaturedProducts /> {/* <--- Agregar acá */}
     </main>
   );
 }

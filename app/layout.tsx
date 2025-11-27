@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 // Fuente elegante para títulos (similar a la de tu logo/diseño)
 const playfair = Playfair_Display({
@@ -31,8 +32,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${playfair.variable} ${lato.variable} font-sans antialiased`}>
-        <Navbar />  {/* <--- AQUÍ */}
-        {children}
+        <Navbar />        {/* Arriba de todo */}
+        {children}        {/* El contenido de cada página */}
+        <Footer />        {/* <--- Abajo de todo */}
       </body>
     </html>
   );

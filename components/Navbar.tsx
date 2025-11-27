@@ -9,26 +9,26 @@ export default function Navbar() {
       <div className="container mx-auto px-4 flex flex-col items-center gap-6">
         
         {/* --- BARRA SUPERIOR (Flor - Logo Texto - Carrito) --- */}
-        <div className="w-full relative flex justify-center items-center mb-2 h-16">
+        <div className="w-full relative flex justify-center items-center mb-2 h-24 md:h-32">
           
           {/* 1. FLOR (Izquierda) */}
           <div className="absolute left-0 top-1/2 -translate-y-1/2">
-            <Image 
+            <Image
               src="/logo-flor.jpg"  // <--- CHEQUEÁ SI ES .JPG O .PNG
               alt="Magnolia Flor"
-              width={80}
-              height={80}
-              // Ajustamos tamaño: 40px en celular (w-10), 64px en compu (md:w-16)
-              className="w-10 md:w-16 object-contain opacity-80" 
+              width={140}
+              height={140}
+              // Ajustamos tamaño: 70px en celular (w-[70px]), 110px en compu (md:w-[110px])
+              className="w-[70px] md:w-[110px] object-contain opacity-80"
             />
           </div>
 
           {/* 2. LOGO TEXTO (Centro - El que te gustaba) */}
           <Link href="/" className="text-center group flex flex-col items-center">
-            <h1 className="font-serif text-3xl md:text-5xl tracking-widest text-magnolia-dark">
+            <h1 className="font-serif text-4xl md:text-6xl tracking-widest text-magnolia-dark">
               MAGNOLIA
             </h1>
-            <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-gray-400 group-hover:text-magnolia-lilac transition-colors mt-1">
+            <span className="text-xs md:text-sm uppercase tracking-[0.3em] text-gray-400 group-hover:text-magnolia-lilac transition-colors mt-1">
               Joyas
             </span>
           </Link>
