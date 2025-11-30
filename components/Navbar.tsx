@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, ChevronDown, Heart } from "lucide-react";
+import { ShoppingCart, ChevronDown, Heart, User } from "lucide-react";
 import { MENU_ITEMS } from "@/data/menuData"; 
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext"; // <--- 1. IMPORTAMOS ESTO
@@ -41,37 +41,37 @@ export default function Navbar() {
               Joyas
             </span>
           </Link>
+{/* ICONOS DERECHA */}
+<div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3 md:gap-4">
+    
+    {/* Login / Usuario */}
+    <Link href="/ingresar" className="text-gray-700 hover:text-magnolia-lilac transition-colors">
+        <User size={24} strokeWidth={1.5} />
+    </Link>
 
-          {/* ICONOS DERECHA */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-4">
-              
-              {/* Favoritos (Corazón Dinámico) */}
-              <Link href="/favoritos" className="transition-colors group">
-                  <Heart 
-                    size={24} 
-                    strokeWidth={1.5} 
-                    // 3. LÓGICA DE COLOR:
-                    // Si tiene favoritos: Relleno rojo (#F87171) y borde rojo
-                    // Si no tiene: Sin relleno ("none") y borde gris (hover rojo)
-                    fill={hasFavorites ? "#F87171" : "none"} 
-                    className={hasFavorites ? "text-red-400" : "text-gray-700 group-hover:text-red-400"}
-                  />
-              </Link>
+    {/* Favoritos */}
+    <Link href="/favoritos" className="text-gray-700 hover:text-red-400 transition-colors">
+        <Heart 
+          size={24} 
+          strokeWidth={1.5} 
+          fill={hasFavorites ? "#F87171" : "none"} 
+          className={hasFavorites ? "text-red-400" : "text-gray-700 group-hover:text-red-400"}
+        />
+    </Link>
 
-              {/* Carrito */}
-              <button 
-                onClick={toggleCart} 
-                className="relative text-gray-700 hover:text-magnolia-lilac transition-colors"
-              >
-                  <ShoppingCart size={24} strokeWidth={1.5} />
-                  
-                  {totalItems > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-magnolia-lilac text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                      {totalItems}
-                    </span>
-                  )}
-              </button>
-          </div>
+    {/* Carrito */}
+    <button 
+      onClick={toggleCart} 
+      className="relative text-gray-700 hover:text-magnolia-lilac transition-colors"
+    >
+        <ShoppingCart size={24} strokeWidth={1.5} />
+        {totalItems > 0 && (
+          <span className="absolute -top-2 -right-2 bg-magnolia-lilac text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+            {totalItems}
+          </span>
+        )}
+    </button>
+</div>
 
         </div>
 
