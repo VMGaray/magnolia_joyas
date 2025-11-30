@@ -1,42 +1,78 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, ChevronDown } from "lucide-react";
-import { MENU_ITEMS } from "@/data/menuData";
+import { ShoppingCart, ChevronDown, Heart } from "lucide-react";
+import { MENU_ITEMS } from "@/data/menuData"; 
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext"; // <--- 1. IMPORTAMOS ESTO
 
 export default function Navbar() {
+  const { toggleCart, totalItems } = useCart();
+  
+  // 2. Traemos los items de favoritos para saber si hay algo guardado
+  const { wishlistItems } = useWishlist();
+  const hasFavorites = wishlistItems.length > 0;
+
   return (
     <header className="w-full bg-white pt-6 pb-0 border-b border-gray-100 relative z-50">
       <div className="container mx-auto px-4 flex flex-col items-center gap-6">
         
-        {/* --- BARRA SUPERIOR (Flor - Logo Texto - Carrito) --- */}
-        <div className="w-full relative flex justify-center items-center mb-2 h-24 md:h-32">
+        {/* --- BARRA SUPERIOR --- */}
+        <div className="w-full relative flex justify-center items-center mb-2 h-16">
           
-          {/* 1. FLOR (Izquierda) */}
+          {/* FLOR (Izquierda) */}
           <div className="absolute left-0 top-1/2 -translate-y-1/2">
-            <Image
-              src="/logo-flor.jpg"  // <--- CHEQUEÁ SI ES .JPG O .PNG
+            <Image 
+              src="/logo-flor.jpg" 
               alt="Magnolia Flor"
-              width={140}
-              height={140}
-              // Ajustamos tamaño: 70px en celular (w-[70px]), 110px en compu (md:w-[110px])
-              className="w-[70px] md:w-[110px] object-contain opacity-80"
+              width={80}
+              height={80}
+              className="w-10 md:w-16 object-contain opacity-80" 
             />
           </div>
 
-          {/* 2. LOGO TEXTO (Centro - El que te gustaba) */}
+          {/* LOGO TEXTO (Centro) */}
           <Link href="/" className="text-center group flex flex-col items-center">
-            <h1 className="font-serif text-4xl md:text-6xl tracking-widest text-magnolia-dark">
+            <h1 className="font-serif text-3xl md:text-5xl tracking-widest text-magnolia-dark">
               MAGNOLIA
             </h1>
-            <span className="text-xs md:text-sm uppercase tracking-[0.3em] text-gray-400 group-hover:text-magnolia-lilac transition-colors mt-1">
+            <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-gray-400 group-hover:text-magnolia-lilac transition-colors mt-1">
               Joyas
             </span>
           </Link>
 
-          {/* 3. CARRITO (Derecha) */}
-          <button className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-700 hover:text-magnolia-lilac transition-colors">
-            <ShoppingCart size={24} strokeWidth={1.5} />
-          </button>
+          {/* ICONOS DERECHA */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-4">
+              
+              {/* Favoritos (Corazón Dinámico) */}
+              <Link href="/favoritos" className="transition-colors group">
+                  <Heart 
+                    size={24} 
+                    strokeWidth={1.5} 
+                    // 3. LÓGICA DE COLOR:
+                    // Si tiene favoritos: Relleno rojo (#F87171) y borde rojo
+                    // Si no tiene: Sin relleno ("none") y borde gris (hover rojo)
+                    fill={hasFavorites ? "#F87171" : "none"} 
+                    className={hasFavorites ? "text-red-400" : "text-gray-700 group-hover:text-red-400"}
+                  />
+              </Link>
+
+              {/* Carrito */}
+              <button 
+                onClick={toggleCart} 
+                className="relative text-gray-700 hover:text-magnolia-lilac transition-colors"
+              >
+                  <ShoppingCart size={24} strokeWidth={1.5} />
+                  
+                  {totalItems > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-magnolia-lilac text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  )}
+              </button>
+          </div>
+
         </div>
 
         {/* --- MENÚ DE NAVEGACIÓN --- */}
