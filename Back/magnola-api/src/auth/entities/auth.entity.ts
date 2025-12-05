@@ -8,10 +8,10 @@ export class Auth {
   @Column({ type: 'varchar', length: 50, nullable: false })
   username: string;
 
-  @Column({ type: 'bigint', unique: true, nullable: false })
+  @Column({ type: 'bigint', nullable: false })
   phone: number;
 
-  @Column({ type: 'varchar', length: 50, unique: true, nullable: false })
+  @Column({ type: 'varchar', length: 50, nullable: false })
   email: string;
 
   @Column({ type: 'varchar', length: 100, nullable: false })

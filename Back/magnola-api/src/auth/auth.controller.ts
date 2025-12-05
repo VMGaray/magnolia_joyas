@@ -6,9 +6,15 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ChangePasswordDto, LoginDto, RegisterDto } from './dtos/auth.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { Roles } from 'src/decorators/rol.decorator';
+import { Role } from './rol.enum';
+import { AuthGuard } from './guards/auth.guard';
+import { RolesGuard } from './guards/roles.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -25,11 +31,17 @@ export class AuthController {
   }
 
   @Get('profile/:id')
+    @ApiBearerAuth()
+    @Roles(Role.User)
+    @UseGuards(AuthGuard, RolesGuard)
   async getProfile(@Param('id') id: string) {
     return this.authService.getUserById(id);
   }
 
   @Put('change-password/:id')
+    @ApiBearerAuth()
+    @Roles(Role.User)
+    @UseGuards(AuthGuard, RolesGuard)
   async changePassword(
     @Param('id') id: string,
     @Body() data: ChangePasswordDto,
