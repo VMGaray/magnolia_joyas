@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
@@ -22,24 +26,37 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto) {
-    const { categoryId, productTypeId, subtypeId, ...productData } = createProductDto;
-    
+    const { categoryId, productTypeId, subtypeId, ...productData } =
+      createProductDto;
+
     // Buscar las entidades relacionadas
-    const category = await this.categoryRepository.findOneBy({ id: categoryId });
+    const category = await this.categoryRepository.findOneBy({
+      id: categoryId,
+    });
     if (!category) {
-      throw new NotFoundException(`Categoría con ID ${categoryId} no encontrada`);
+      throw new NotFoundException(
+        `Categoría con ID ${categoryId} no encontrada`,
+      );
     }
 
-    const productType = await this.productTypeRepository.findOneBy({ id: productTypeId });
+    const productType = await this.productTypeRepository.findOneBy({
+      id: productTypeId,
+    });
     if (!productType) {
-      throw new NotFoundException(`Tipo de producto con ID ${productTypeId} no encontrado`);
+      throw new NotFoundException(
+        `Tipo de producto con ID ${productTypeId} no encontrado`,
+      );
     }
 
     let subtype: Subtype | null = null;
     if (subtypeId) {
-      const foundSubtype = await this.subtypeRepository.findOneBy({ id: subtypeId });
+      const foundSubtype = await this.subtypeRepository.findOneBy({
+        id: subtypeId,
+      });
       if (!foundSubtype) {
-        throw new NotFoundException(`Subtipo con ID ${subtypeId} no encontrado`);
+        throw new NotFoundException(
+          `Subtipo con ID ${subtypeId} no encontrado`,
+        );
       }
       subtype = foundSubtype;
     }
@@ -56,7 +73,7 @@ export class ProductsService {
 
     if (existingProduct) {
       throw new ConflictException(
-        `Ya existe un producto con el nombre "${productData.name}" en la categoría "${category.name}" y tipo "${productType.name}"`
+        `Ya existe un producto con el nombre "${productData.name}" en la categoría "${category.name}" y tipo "${productType.name}"`,
       );
     }
 
@@ -72,7 +89,12 @@ export class ProductsService {
   }
 
   async findAll(filters: FilterProductsDto) {
-    const qb = this.productRepository.createQueryBuilder('product')
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 10;
+    const skip = (page - 1) * limit;
+
+    const qb = this.productRepository
+      .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.productType', 'productType')
       .leftJoinAndSelect('product.subtype', 'subtype');
@@ -87,12 +109,26 @@ export class ProductsService {
       qb.andWhere('subtype.name = :subtype', { subtype: filters.subtype });
     }
 
-    return qb.getMany();
+    const [data, total] = await qb.skip(skip).take(limit).getManyAndCount();
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async seed() {
     // Categories - mantener como está
-    const categoriesData = ['Plata 925', 'Oro 18 k', 'Enchapados', 'Personalizados', 'Insumos'];
+    const categoriesData = [
+      'Plata 925',
+      'Oro 18 k',
+      'Enchapados',
+      'Personalizados',
+      'Insumos',
+    ];
     for (const name of categoriesData) {
       let category = await this.categoryRepository.findOneBy({ name });
       if (!category) {
@@ -102,19 +138,39 @@ export class ProductsService {
     }
 
     // Obtener categorías
-    const plata925 = await this.categoryRepository.findOneBy({ name: 'Plata 925' });
-    const oro18k = await this.categoryRepository.findOneBy({ name: 'Oro 18 k' });
-    const enchapados = await this.categoryRepository.findOneBy({ name: 'Enchapados' });
+    const plata925 = await this.categoryRepository.findOneBy({
+      name: 'Plata 925',
+    });
+    const oro18k = await this.categoryRepository.findOneBy({
+      name: 'Oro 18 k',
+    });
+    const enchapados = await this.categoryRepository.findOneBy({
+      name: 'Enchapados',
+    });
 
     // Product Types para las 3 categorías principales
-    const productTypesData = ['Anillos', 'Aros', 'Cadenas', 'Dijes', 'Pulseras', 'Conjuntos', 'Combos'];
-    
+    const productTypesData = [
+      'Anillos',
+      'Aros',
+      'Cadenas',
+      'Dijes',
+      'Pulseras',
+      'Conjuntos',
+      'Combos',
+    ];
+
     for (const category of [plata925, oro18k, enchapados]) {
       if (category) {
         for (const typeName of productTypesData) {
-          let type = await this.productTypeRepository.findOneBy({ name: typeName, category });
+          let type = await this.productTypeRepository.findOneBy({
+            name: typeName,
+            category,
+          });
           if (!type) {
-            type = this.productTypeRepository.create({ name: typeName, category });
+            type = this.productTypeRepository.create({
+              name: typeName,
+              category,
+            });
             await this.productTypeRepository.save(type);
           }
         }
@@ -136,12 +192,21 @@ export class ProductsService {
 
     for (const category of [plata925, oro18k, enchapados]) {
       if (category) {
-        const anillosType = await this.productTypeRepository.findOneBy({ name: 'Anillos', category });
+        const anillosType = await this.productTypeRepository.findOneBy({
+          name: 'Anillos',
+          category,
+        });
         if (anillosType) {
           for (const subtypeName of anillosSubtypes) {
-            let subtype = await this.subtypeRepository.findOneBy({ name: subtypeName, productType: anillosType });
+            let subtype = await this.subtypeRepository.findOneBy({
+              name: subtypeName,
+              productType: anillosType,
+            });
             if (!subtype) {
-              subtype = this.subtypeRepository.create({ name: subtypeName, productType: anillosType });
+              subtype = this.subtypeRepository.create({
+                name: subtypeName,
+                productType: anillosType,
+              });
               await this.subtypeRepository.save(subtype);
             }
           }
@@ -165,12 +230,21 @@ export class ProductsService {
 
     for (const category of [plata925, oro18k, enchapados]) {
       if (category) {
-        const arosType = await this.productTypeRepository.findOneBy({ name: 'Aros', category });
+        const arosType = await this.productTypeRepository.findOneBy({
+          name: 'Aros',
+          category,
+        });
         if (arosType) {
           for (const subtypeName of arosSubtypes) {
-            let subtype = await this.subtypeRepository.findOneBy({ name: subtypeName, productType: arosType });
+            let subtype = await this.subtypeRepository.findOneBy({
+              name: subtypeName,
+              productType: arosType,
+            });
             if (!subtype) {
-              subtype = this.subtypeRepository.create({ name: subtypeName, productType: arosType });
+              subtype = this.subtypeRepository.create({
+                name: subtypeName,
+                productType: arosType,
+              });
               await this.subtypeRepository.save(subtype);
             }
           }
@@ -195,12 +269,21 @@ export class ProductsService {
 
     for (const category of [plata925, oro18k, enchapados]) {
       if (category) {
-        const cadenasType = await this.productTypeRepository.findOneBy({ name: 'Cadenas', category });
+        const cadenasType = await this.productTypeRepository.findOneBy({
+          name: 'Cadenas',
+          category,
+        });
         if (cadenasType) {
           for (const subtypeName of cadenasSubtypes) {
-            let subtype = await this.subtypeRepository.findOneBy({ name: subtypeName, productType: cadenasType });
+            let subtype = await this.subtypeRepository.findOneBy({
+              name: subtypeName,
+              productType: cadenasType,
+            });
             if (!subtype) {
-              subtype = this.subtypeRepository.create({ name: subtypeName, productType: cadenasType });
+              subtype = this.subtypeRepository.create({
+                name: subtypeName,
+                productType: cadenasType,
+              });
               await this.subtypeRepository.save(subtype);
             }
           }
@@ -226,12 +309,21 @@ export class ProductsService {
 
     for (const category of [plata925, oro18k, enchapados]) {
       if (category) {
-        const pulserasType = await this.productTypeRepository.findOneBy({ name: 'Pulseras', category });
+        const pulserasType = await this.productTypeRepository.findOneBy({
+          name: 'Pulseras',
+          category,
+        });
         if (pulserasType) {
           for (const subtypeName of pulserasSubtypes) {
-            let subtype = await this.subtypeRepository.findOneBy({ name: subtypeName, productType: pulserasType });
+            let subtype = await this.subtypeRepository.findOneBy({
+              name: subtypeName,
+              productType: pulserasType,
+            });
             if (!subtype) {
-              subtype = this.subtypeRepository.create({ name: subtypeName, productType: pulserasType });
+              subtype = this.subtypeRepository.create({
+                name: subtypeName,
+                productType: pulserasType,
+              });
               await this.subtypeRepository.save(subtype);
             }
           }
@@ -256,12 +348,21 @@ export class ProductsService {
 
     for (const category of [plata925, oro18k, enchapados]) {
       if (category) {
-        const dijesType = await this.productTypeRepository.findOneBy({ name: 'Dijes', category });
+        const dijesType = await this.productTypeRepository.findOneBy({
+          name: 'Dijes',
+          category,
+        });
         if (dijesType) {
           for (const subtypeName of dijesSubtypes) {
-            let subtype = await this.subtypeRepository.findOneBy({ name: subtypeName, productType: dijesType });
+            let subtype = await this.subtypeRepository.findOneBy({
+              name: subtypeName,
+              productType: dijesType,
+            });
             if (!subtype) {
-              subtype = this.subtypeRepository.create({ name: subtypeName, productType: dijesType });
+              subtype = this.subtypeRepository.create({
+                name: subtypeName,
+                productType: dijesType,
+              });
               await this.subtypeRepository.save(subtype);
             }
           }
@@ -269,7 +370,10 @@ export class ProductsService {
       }
     }
 
-    return { message: 'Seeding complete - All categories, product types, and subtypes created' };
+    return {
+      message:
+        'Seeding complete - All categories, product types, and subtypes created',
+    };
   }
 
   async getCategories() {
@@ -281,40 +385,81 @@ export class ProductsService {
   }
 
   async getSubtypes() {
-    return this.subtypeRepository.find({ relations: ['productType', 'productType.category'] });
+    return this.subtypeRepository.find({
+      relations: ['productType', 'productType.category'],
+    });
   }
 
   async seedProducts() {
     // Obtener categorías y tipos necesarios
-    const plata925 = await this.categoryRepository.findOneBy({ name: 'Plata 925' });
-    const oro18k = await this.categoryRepository.findOneBy({ name: 'Oro 18 k' });
-    const enchapados = await this.categoryRepository.findOneBy({ name: 'Enchapados' });
+    const plata925 = await this.categoryRepository.findOneBy({
+      name: 'Plata 925',
+    });
+    const oro18k = await this.categoryRepository.findOneBy({
+      name: 'Oro 18 k',
+    });
+    const enchapados = await this.categoryRepository.findOneBy({
+      name: 'Enchapados',
+    });
 
     if (!plata925 || !oro18k || !enchapados) {
-      throw new NotFoundException('Debes ejecutar el seed principal primero (POST /products/seed)');
+      throw new NotFoundException(
+        'Debes ejecutar el seed principal primero (POST /products/seed)',
+      );
     }
 
     // Obtener tipos de productos
-    const anillosPlata = await this.productTypeRepository.findOne({ where: { name: 'Anillos', category: { id: plata925.id } } });
-    const arosPlata = await this.productTypeRepository.findOne({ where: { name: 'Aros', category: { id: plata925.id } } });
-    const cadenasOro = await this.productTypeRepository.findOne({ where: { name: 'Cadenas', category: { id: oro18k.id } } });
-    const pulserasPlata = await this.productTypeRepository.findOne({ where: { name: 'Pulseras', category: { id: plata925.id } } });
-    const dijesEnchapados = await this.productTypeRepository.findOne({ where: { name: 'Dijes', category: { id: enchapados.id } } });
+    const anillosPlata = await this.productTypeRepository.findOne({
+      where: { name: 'Anillos', category: { id: plata925.id } },
+    });
+    const arosPlata = await this.productTypeRepository.findOne({
+      where: { name: 'Aros', category: { id: plata925.id } },
+    });
+    const cadenasOro = await this.productTypeRepository.findOne({
+      where: { name: 'Cadenas', category: { id: oro18k.id } },
+    });
+    const pulserasPlata = await this.productTypeRepository.findOne({
+      where: { name: 'Pulseras', category: { id: plata925.id } },
+    });
+    const dijesEnchapados = await this.productTypeRepository.findOne({
+      where: { name: 'Dijes', category: { id: enchapados.id } },
+    });
 
-    if (!anillosPlata || !arosPlata || !cadenasOro || !pulserasPlata || !dijesEnchapados) {
-      throw new NotFoundException('Tipos de productos no encontrados. Ejecuta el seed principal primero.');
+    if (
+      !anillosPlata ||
+      !arosPlata ||
+      !cadenasOro ||
+      !pulserasPlata ||
+      !dijesEnchapados
+    ) {
+      throw new NotFoundException(
+        'Tipos de productos no encontrados. Ejecuta el seed principal primero.',
+      );
     }
 
     // Obtener algunos subtipos
-    const piedrasNaturales = await this.subtypeRepository.findOne({ where: { name: 'Piedras naturales', productType: { id: anillosPlata.id } } });
-    const colgantes = await this.subtypeRepository.findOne({ where: { name: 'Colgantes', productType: { id: arosPlata.id } } });
-    const exclusivas = await this.subtypeRepository.findOne({ where: { name: 'Exclusivas e importante', productType: { id: cadenasOro.id } } });
+    const piedrasNaturales = await this.subtypeRepository.findOne({
+      where: {
+        name: 'Piedras naturales',
+        productType: { id: anillosPlata.id },
+      },
+    });
+    const colgantes = await this.subtypeRepository.findOne({
+      where: { name: 'Colgantes', productType: { id: arosPlata.id } },
+    });
+    const exclusivas = await this.subtypeRepository.findOne({
+      where: {
+        name: 'Exclusivas e importante',
+        productType: { id: cadenasOro.id },
+      },
+    });
 
     // Productos de ejemplo
     const sampleProducts = [
       {
         name: 'Anillo Solitario con Amatista',
-        description: 'Elegante anillo de plata 925 con amatista natural de 6mm, diseño clásico',
+        description:
+          'Elegante anillo de plata 925 con amatista natural de 6mm, diseño clásico',
         price: 48000,
         imageUrl: 'https://ejemplo.com/anillo-amatista.jpg',
         category: plata925,
@@ -323,7 +468,8 @@ export class ProductsService {
       },
       {
         name: 'Aros Colgantes Estrella y Luna',
-        description: 'Hermosos aros de plata 925 con diseño de estrella y luna, largo 3.5cm',
+        description:
+          'Hermosos aros de plata 925 con diseño de estrella y luna, largo 3.5cm',
         price: 35000,
         imageUrl: 'https://ejemplo.com/aros-estrella-luna.jpg',
         category: plata925,
@@ -332,7 +478,8 @@ export class ProductsService {
       },
       {
         name: 'Cadena Oro Eslabón Cubano 50cm',
-        description: 'Cadena de oro 18k estilo cubano, 50cm de largo, 4mm de grosor',
+        description:
+          'Cadena de oro 18k estilo cubano, 50cm de largo, 4mm de grosor',
         price: 950000,
         imageUrl: 'https://ejemplo.com/cadena-oro-cubano.jpg',
         category: oro18k,
@@ -350,7 +497,8 @@ export class ProductsService {
       },
       {
         name: 'Dije Corazón Enchapado',
-        description: 'Dije en forma de corazón enchapado en oro, perfecto para regalo',
+        description:
+          'Dije en forma de corazón enchapado en oro, perfecto para regalo',
         price: 15000,
         imageUrl: 'https://ejemplo.com/dije-corazon.jpg',
         category: enchapados,
@@ -359,7 +507,8 @@ export class ProductsService {
       },
       {
         name: 'Anillo Infinito Plata Lisa',
-        description: 'Anillo de plata 925 con diseño de infinito, acabado pulido',
+        description:
+          'Anillo de plata 925 con diseño de infinito, acabado pulido',
         price: 28000,
         imageUrl: 'https://ejemplo.com/anillo-infinito.jpg',
         category: plata925,
@@ -395,7 +544,8 @@ export class ProductsService {
       },
       {
         name: 'Anillo Compromiso Cubic Zirconia',
-        description: 'Anillo de compromiso en plata 925 con cubic zirconia de 7mm',
+        description:
+          'Anillo de compromiso en plata 925 con cubic zirconia de 7mm',
         price: 55000,
         imageUrl: 'https://ejemplo.com/anillo-compromiso.jpg',
         category: plata925,

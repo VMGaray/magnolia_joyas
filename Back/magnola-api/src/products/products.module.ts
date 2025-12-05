@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsService } from './products.service';
@@ -8,7 +9,9 @@ import { ProductType } from './entities/product-type.entity';
 import { Subtype } from './entities/subtype.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, Category, ProductType, Subtype])],
+  imports: [
+    TypeOrmModule.forFeature([Product, Category, ProductType, Subtype]),
+  ],
   controllers: [ProductsController],
   providers: [ProductsService],
 })
@@ -17,7 +20,9 @@ export class ProductsModule implements OnModuleInit {
 
   async onModuleInit() {
     try {
-      console.log('🌱 Iniciando seed automático de categorías y tipos de productos...');
+      console.log(
+        '🌱 Iniciando seed automático de categorías y tipos de productos...',
+      );
       await this.productsService.seed();
       console.log('✅ Seed de categorías y tipos completado exitosamente');
     } catch (error) {
